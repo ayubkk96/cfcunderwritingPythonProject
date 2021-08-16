@@ -23,8 +23,9 @@ url = "https://www.cfcunderwriting.com"
 page = requests.get(url)
 scraped_page = BeautifulSoup(page.content, "html.parser")
 
-# Insert name of JSON file
-json_file_name = "external_resources"
+# Insert name of JSON files
+external_resources_json = "external_resources"
+word_frequency_count_json = "word_frequency"
 
 # Variables to find internal resources on cfcunderwriting.com
 cfc_name = "cfcunderwriting"
@@ -47,11 +48,16 @@ no_text_html_tags = ['style', 'script',
                      'input', 'li',
                      'ul', 'svg',
                      'span', 'body',
-                     'header', 'nav', 'iframe', 'noscript', 'label']
+                     'header', 'nav', 'iframe', 'noscript', 'label', 'main']
 
 
 # 2. Writes a list of *all externally loaded resources*
 # (e.g. images/scripts/fonts not hosted on cfcunderwriting.com) to a JSON output file.
+def save_json_file(file_name, data):
+    with open(file_name + ".json", 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
+        print("External resources have been exported to the JSON file named:", file_name)
+
 
 def get_list_of_external_resources(tag, attribute, target_page):
     list_of_all_external_resources = []
@@ -67,7 +73,7 @@ def get_list_of_external_resources(tag, attribute, target_page):
     return list_of_all_external_resources
 
 
-def create_json_file():
+def create_external_resources_list():
     data = []
     for key in external_resources_check_list:
         attributes = get_list_of_external_resources(key, external_resources_check_list[key], scraped_page)
@@ -79,9 +85,7 @@ def create_json_file():
     if not data:
         return print("No external resources on the web page")
 
-    with open(json_file_name + ".json", 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
-        print("External resources have been exported to the JSON file named:", json_file_name)
+    save_json_file(external_resources_json, data)
 
 
 # 3. Enumerates the page's hyperlinks and identifies the location of the "Privacy Policy"
@@ -158,42 +162,37 @@ def get_word_frequency_count(privacy_link):
                 elif great_grandad == 'form':
                     pass
                 elif grandad or great_grandad != 'form':
+                    # print("text of tag", tag.text.strip(), "tag name", tag.name)
                     tag_and_text_logger[tag.text.strip()] = tag.name
 
     # print the keys, they should then be added to a list...
     for key in tag_and_text_logger:
-        # print(key)
-        # if all(x.isalpha() or x.isspace() for x in key):
+        # if key not in list_of_words:
         list_of_words.append(key)
-    print(list_of_words)
-    #for item in list_of_words:
-       # if "\n" in item and not any(char.isdigit() for char in item) and "," and "&" not in item:
-            #print([item])
-            # list_of_words.remove(item)
-            # print("hi")
+
     str1 = ' '.join(list_of_words)
-    #print(str1)
+    str1 = str1.lower()
     str1.strip()
 
     str2 = str1.translate(str.maketrans('', '', string.punctuation))
-    #print(str2)
+    str2 = str2.replace("“", "")
+    str2 = str2.replace("↑", "")
+    str2 = str2.replace("©", "")
+    print(str2)
 
     result = ''.join([i for i in str2 if not i.isdigit()])
 
-    #print(result)
-
     result1 = result.split()
 
-    #print(result1)
-
     counts = Counter(result1)
-    print(counts)
+    save_json_file(word_frequency_count_json, counts)
+    #print(counts)
     return 1
 
 
 def main():
     #   1. Create JSON file of external resources on cfcunderwriting.com
-    create_json_file()
+    create_external_resources_list()
 
     #   2. Return enumeration of page's hyperlinks to object
     enum_object = enumerate_hyperlinks()
@@ -205,7 +204,7 @@ def main():
     get_word_frequency_count(privacy_policy_link)
 
     html = urllib.request.urlopen(url + privacy_policy_link).read()
-    print("this is the test from stack overflow: ", text_from_html(html))
+    # print("this is the test from stack overflow: ", text_from_html(html))
 
     return print("Web scraping has been completed successfully")
 
