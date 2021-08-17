@@ -11,7 +11,7 @@ on cfcunderwriting.com) to a JSON output file.
 3. Enumerates the page's hyperlinks and identifies the location of the "Privacy Policy"
 page
 4. Uses the privacy policy URL identified in step 3 to scrape the pages content.
-5. Produce a case-insentitive word frequency count for all of the visible text on the page and exports the count to a JSON file.
+5. Produces a case-insentitive word frequency count for all of the visible text on the page and exports the count to a JSON file.
 
 Installation:
 To install this file on your computer, enter this script into your terminal: gh repo clone https://github.com/ayubkk96/cfcunderwritingPythonProject
