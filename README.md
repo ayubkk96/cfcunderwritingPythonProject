@@ -24,10 +24,10 @@ If you prefer to use a terminal, navigate to src folder and enter and execute 'p
 # Usage
 The usage of this program is to scrape the contents of a page and produce a json file containing external resources and a word count of a particular page.
 
-# Support:
+# Support
 If you need support setting this project up, please contact my email address at 'ayubkaou@gmail.com'
 
-# Roadmap:
+# Roadmap
 1. Create tests of functions, such as testing the connection to the target website for scraping.
 2. Create an error handler to fix and respond to error messages.
 3. Create a user input function to take the region the user is located so that the program scrapes the specified region's page. e.g. 'CFCunderwriting.com/us/'.
@@ -35,6 +35,6 @@ If you need support setting this project up, please contact my email address at 
 5. Convert the program to use Selenium so that the scraping can be more accurate. Selenium is better for scraping pages built on JavaScript. CFC underwriting uses ReactJS.
 6. Import PythonDocs to create more sophisticated comments for the program.
 
-# Contributing:
+# Contributing
 If anyone is willing to contribute or expand on this project, please contact me on ayubkaou@gmail.com
 Anyone is welcome to clone this repo for their own purposes. All scraping must comply with CFC Underwriting's robots.txt file: https://www.cfcunderwriting.com/en-gb/robots.txt
