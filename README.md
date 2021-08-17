@@ -17,7 +17,7 @@ page
 To install this file on your computer, enter this script into your terminal: gh repo clone https://github.com/ayubkk96/cfcunderwritingPythonProject
 If you would like to install the file via a gui, please check out the docs on GitHub.com: https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository-from-github/cloning-a-repository
 
-# How to set up and run the program
+# How to run the program
 Run and build 'main.py' in an IDE of your choice.
 If you prefer to use a terminal, navigate to src folder and enter and execute 'python main.py'
 
