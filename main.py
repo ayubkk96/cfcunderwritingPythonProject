@@ -135,11 +135,10 @@ def text_from_html(body):
     soup = BeautifulSoup(body, 'html.parser')
     texts = soup.findAll(text=True)
     visible_texts = filter(tag_visible, texts)
-    # print(visible_texts)
+    print(visible_texts)
     return u" ".join(t.strip() for t in visible_texts)
 
 
-# Loop throul all tags and get the ones that arent in list and take the text and count them.
 def get_word_frequency_count(privacy_link):
     privacy_page = url + privacy_link
     page1 = requests.get(privacy_page)
