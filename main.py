@@ -15,51 +15,53 @@ import json
 # Make a mobile version because some things are viewable by mobile but not on desktop, e.g. MY CFC portal is
 # still viewable on mobile despite being discontinued on July 14th 2021
 # Prevented incorrect duplicates by making a dictionary that logged keys that were already in
+# Could have done docstring if more time
 
-# 1. Scrape the index webpage hosted at `cfcunderwriting.com`
+# 1. Scrape the index webpage hosted at `cfcunderwriting.com`.
 
-# Insert URL of desired target for web scraper
-url = "https://www.cfcunderwriting.com"
-page = requests.get(url)
-scraped_page = BeautifulSoup(page.content, "html.parser")
 
-# Insert name of JSON files
+# Name of JSON files.
 external_resources_json = "external_resources"
 word_frequency_count_json = "word_frequency"
 
-# Variables to find internal resources on cfcunderwriting.com
+# URL of target page.
+url = "https://www.cfcunderwriting.com"
+
+# Variables to find internal resources on 'cfcunderwriting.com'.
 cfc_name = "cfcunderwriting"
 internal_folder_directory = "/"
 
-# Known resources on a web page
+# Known resources on a web page.
 external_resources_check_list = {"img": "src", "video": "src",
                                  "audio": "src", "embed": "src",
                                  "object": "data", "source": "src",
                                  "script": "src", "link": "href",
                                  "iframe": "src"}
 
-# HTML tags that do not contain visible text and get rid of tag duplicates
+# HTML tags that do not contain visible text and get rid of tag duplicates.
 no_text_html_tags = ['style', 'script',
-                     'head', 'title',
-                     'meta', '[document]',
-                     'html', 'link',
-                     'form', 'select',
-                     'div', 'option',
-                     'input', 'li',
-                     'ul', 'svg',
-                     'span', 'body',
-                     'header', 'nav', 'iframe', 'noscript', 'label', 'main']
+                     'head', 'title', 'meta', '[document]',
+                     'html', 'link', 'form', 'select',
+                     'div', 'option', 'input', 'li',
+                     'ul', 'svg', 'span', 'body', 'header', 'nav',
+                     'iframe', 'noscript', 'label', 'main']
 
 
-# 2. Writes a list of *all externally loaded resources*
-# (e.g. images/scripts/fonts not hosted on cfcunderwriting.com) to a JSON output file.
+def scrape_page(url):
+    page = requests.get(url)
+    scraped_page = BeautifulSoup(page.content, "html.parser")
+    return scraped_page
+
+
 def save_json_file(file_name, data):
+    # Takes file name and saves data into JSON format in a file
     with open(file_name + ".json", 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
         print("External resources have been exported to the JSON file named:", file_name)
 
 
 def get_list_of_external_resources(tag, attribute, target_page):
+    # Loops through soup of page and appends attributes if they do not have cfc name or '\' folder directory
     list_of_all_external_resources = []
 
     for x in target_page.findAll(tag):
@@ -73,7 +75,9 @@ def get_list_of_external_resources(tag, attribute, target_page):
     return list_of_all_external_resources
 
 
-def create_external_resources_list():
+def create_external_resources_list(scraped_page):
+    # Takes the list of attributes and checks them with the list of external resources tags to determine if it is
+    # external
     data = []
     for key in external_resources_check_list:
         attributes = get_list_of_external_resources(key, external_resources_check_list[key], scraped_page)
@@ -85,14 +89,13 @@ def create_external_resources_list():
     if not data:
         return print("No external resources on the web page")
 
-    save_json_file(external_resources_json, data)
+    return data
 
 
-# 3. Enumerates the page's hyperlinks and identifies the location of the "Privacy Policy"
-# page
-def enumerate_hyperlinks():
+def enumerate_hyperlinks(target_page):
+    # Returns hyperlinks enumerated by checking if the link has 'href'
     list_of_hyperlinks = []
-    content = requests.get(url).content
+    content = requests.get(target_page).content
 
     for link in BeautifulSoup(content, parse_only=SoupStrainer('a'), features="lxml"):
         if hasattr(link, "href"):
@@ -108,6 +111,7 @@ def enumerate_hyperlinks():
 
 
 def find_privacy_policy(enum_object):
+    # Loops through the enum object to find the privacy page link
     print("Hyperlinks have been enumerated")
     privacy_policy_link = ""
     for links in enum_object:
@@ -123,37 +127,27 @@ def find_privacy_policy(enum_object):
 # Produce a case-insensitive word frequency count for all of the visible text on the page.
 # Your frequency count should also be written to a JSON output file...
 
-def tag_visible(element):
-    if element.parent.name in no_text_html_tags:
-        return False
-    if isinstance(element, Comment):
-        return False
-    return True
+def get_privacy_policy_soup(privacy_policy_link):
+    # Create privacy page link and new scraped page soup.
+    privacy_page = url + privacy_policy_link
+    privacy_page = requests.get(privacy_page)
+    page_soup = BeautifulSoup(privacy_page.content, "html.parser")
+
+    return page_soup
 
 
-def text_from_html(body):
-    soup = BeautifulSoup(body, 'html.parser')
-    texts = soup.findAll(text=True)
-    visible_texts = filter(tag_visible, texts)
-    print(visible_texts)
-    return u" ".join(t.strip() for t in visible_texts)
-
-
-def get_word_frequency_count(privacy_link):
-    privacy_page = url + privacy_link
-    page1 = requests.get(privacy_page)
-    scraped_page1 = BeautifulSoup(page1.content, "html.parser")
-
-    list_of_words = []
-    tag_and_text_logger = {}
-    # print(scraped_page1.find_all("div", class_="desc"))
-    for tag in scraped_page1.findAll(True):
+def get_dict_of_words(page_soup):
+    # Get the visible text of the page into a dictionary and return the dictionary.
+    # The tag names will be compared with html tags that do not have text.
+    dictionary = {}
+    for tag in page_soup.findAll(True):
         if tag.name in no_text_html_tags:
             pass
         else:
+            # Assign inheritance of tags to variables
             grandad = tag.parent.parent.name
             great_grandad = tag.parent.parent.parent.name
-            if (tag.text, tag.name) == tag_and_text_logger.items():
+            if (tag.text, tag.name) == dictionary.items():
                 pass
             else:
                 if grandad == 'form':
@@ -161,14 +155,23 @@ def get_word_frequency_count(privacy_link):
                 elif great_grandad == 'form':
                     pass
                 elif grandad or great_grandad != 'form':
-                    # print("text of tag", tag.text.strip(), "tag name", tag.name)
-                    tag_and_text_logger[tag.text.strip()] = tag.name
+                    # Assign text to key in dictionary
+                    # to prevent text from being overridden by incorrect duplicates.
+                    dictionary[tag.text.strip()] = tag.name
+    return dictionary
 
-    # print the keys, they should then be added to a list...
-    for key in tag_and_text_logger:
-        # if key not in list_of_words:
+
+def get_list_of_words(dictionary):
+    # Append the text to list
+    list_of_words = []
+
+    for key in dictionary:
         list_of_words.append(key)
+    return list_of_words
 
+
+def clean_list(list_of_words):
+    # Remove punctuation, spaces and other ASCII characters from list.
     str1 = ' '.join(list_of_words)
     str1 = str1.lower()
     str1.strip()
@@ -177,33 +180,39 @@ def get_word_frequency_count(privacy_link):
     str2 = str2.replace("“", "")
     str2 = str2.replace("↑", "")
     str2 = str2.replace("©", "")
-    print(str2)
 
     result = ''.join([i for i in str2 if not i.isdigit()])
+    list_of_words = result.split()
 
-    result1 = result.split()
+    return list_of_words
 
-    counts = Counter(result1)
+
+def get_word_frequency_count(list_of_words):
+    counts = Counter(list_of_words)
     save_json_file(word_frequency_count_json, counts)
-    #print(counts)
+    print("Count of word frequency has been uploaded to the JSON file named:", word_frequency_count_json)
     return 1
 
 
 def main():
-    #   1. Create JSON file of external resources on cfcunderwriting.com
-    create_external_resources_list()
+    #   1.Scrape the index webpage hosted at `cfcunderwriting.com`
+    page_soup = scrape_page(url)
 
-    #   2. Return enumeration of page's hyperlinks to object
-    enum_object = enumerate_hyperlinks()
+    #   2. Create JSON file of external resources on cfcunderwriting.com
+    external_resources_data = create_external_resources_list(page_soup)
+    save_json_file(external_resources_json, external_resources_data)
 
-    #   3. Find privacy policy link on page using enumeration object created above
+    #   3. Return enumeration of page's hyperlinks to object and
+    #   find privacy policy link on page using enumeration object created
+    enum_object = enumerate_hyperlinks(url)
     privacy_policy_link = find_privacy_policy(enum_object)
 
-    #   4. Access and count the privacy policy page using the link obtained in the enumeration object
-    get_word_frequency_count(privacy_policy_link)
-
-    html = urllib.request.urlopen(url + privacy_policy_link).read()
-    # print("this is the test from stack overflow: ", text_from_html(html))
+    #   4. Access and count the privacy policy page's 'visible' text using the link obtained in the enumeration object
+    privacy_page = get_privacy_policy_soup(privacy_policy_link)
+    dictionary = get_dict_of_words(privacy_page)
+    list_of_words = get_list_of_words(dictionary)
+    clean_list_of_words = clean_list(list_of_words)
+    get_word_frequency_count(clean_list_of_words)
 
     return print("Web scraping has been completed successfully")
 
