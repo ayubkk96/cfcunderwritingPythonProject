@@ -2,23 +2,7 @@ import requests
 from bs4 import BeautifulSoup, SoupStrainer
 from collections import Counter
 import string
-from bs4.element import Comment
-import urllib.request
-
 import json
-
-# What I would do if i had more time:
-# Error handler to quit if nothing is found
-# Test functions and connection to website
-# Put user input for whichever location they are in, that way I can insert 'en-gb' or 'en-us' for the url
-# as it might break if the user's location is in USA and this code trying to access the GB privacy policy page
-# Make a mobile version because some things are viewable by mobile but not on desktop, e.g. MY CFC portal is
-# still viewable on mobile despite being discontinued on July 14th 2021
-# Prevented incorrect duplicates by making a dictionary that logged keys that were already in
-# Could have done docstring if more time
-
-# 1. Scrape the index webpage hosted at `cfcunderwriting.com`.
-
 
 # Name of JSON files.
 external_resources_json = "external_resources"
@@ -47,9 +31,11 @@ no_text_html_tags = ['style', 'script',
                      'iframe', 'noscript', 'label', 'main']
 
 
-def scrape_page(url):
-    page = requests.get(url)
+def scrape_page(target_page):
+    # Scrape the target page
+    page = requests.get(target_page)
     scraped_page = BeautifulSoup(page.content, "html.parser")
+    print(target_page, "has been scraped")
     return scraped_page
 
 
@@ -57,7 +43,7 @@ def save_json_file(file_name, data):
     # Takes file name and saves data into JSON format in a file
     with open(file_name + ".json", 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
-        print("External resources have been exported to the JSON file named:", file_name)
+        print("The data has been exported to the JSON file named:", file_name)
 
 
 def get_list_of_external_resources(tag, attribute, target_page):
@@ -123,10 +109,6 @@ def find_privacy_policy(enum_object):
         return print("There is no privacy policy link on this page")
 
 
-# 4. Use the privacy policy URL identified in step 3 and scrape the pages content.
-# Produce a case-insensitive word frequency count for all of the visible text on the page.
-# Your frequency count should also be written to a JSON output file...
-
 def get_privacy_policy_soup(privacy_policy_link):
     # Create privacy page link and new scraped page soup.
     privacy_page = url + privacy_policy_link
@@ -189,9 +171,8 @@ def clean_list(list_of_words):
 
 def get_word_frequency_count(list_of_words):
     counts = Counter(list_of_words)
-    save_json_file(word_frequency_count_json, counts)
-    print("Count of word frequency has been uploaded to the JSON file named:", word_frequency_count_json)
-    return 1
+    print("The list of words have been counted.")
+    return counts
 
 
 def main():
@@ -207,13 +188,14 @@ def main():
     enum_object = enumerate_hyperlinks(url)
     privacy_policy_link = find_privacy_policy(enum_object)
 
-    #   4. Access and count the privacy policy page's 'visible' text using the link obtained in the enumeration object
+    #   4. Access and count the privacy policy page's 'visible'
+    #   text using the link obtained in the enumeration object
     privacy_page = get_privacy_policy_soup(privacy_policy_link)
     dictionary = get_dict_of_words(privacy_page)
     list_of_words = get_list_of_words(dictionary)
     clean_list_of_words = clean_list(list_of_words)
-    get_word_frequency_count(clean_list_of_words)
-
+    counts = get_word_frequency_count(clean_list_of_words)
+    save_json_file(word_frequency_count_json, counts)
     return print("Web scraping has been completed successfully")
 
 
