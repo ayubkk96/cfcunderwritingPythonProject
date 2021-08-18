@@ -24,7 +24,7 @@ If you prefer to use a terminal, navigate to src folder and enter and execute 'p
 If you have not already installed the requirements, you can enter: $ pip install -r requirements.txt
 
 # Usage
-The usage of this program is to scrape the contents of a page and produce a json file containing external resources and a word count of a particular page.
+The usage of this program is to scrape the contents of a page and produce two json files containing external resources and a word count of a particular page.
 
 # Support
 If you need support setting this project up, please contact my email address at 'ayubkaou@gmail.com'
