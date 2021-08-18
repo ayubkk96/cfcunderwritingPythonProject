@@ -21,6 +21,8 @@ If you would like to install the file via a gui, please check out the docs on Gi
 Run and build 'main.py' in an IDE of your choice.
 If you prefer to use a terminal, navigate to src folder and enter and execute 'python main.py'
 
+If you have not already installed the requirements, you can enter: $ pip install -r requirements.txt
+
 # Usage
 The usage of this program is to scrape the contents of a page and produce a json file containing external resources and a word count of a particular page.
 
